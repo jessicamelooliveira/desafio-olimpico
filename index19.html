@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafio Olímpico</title>
+    <link rel="icon" type="image/png" href="https://marketplace.canva.com/ezQqE/MAFzjgezQqE/1/tl/canva-star-pixel-icon-MAFzjgezQqE.png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --sky-blue: #87CEEB;
+            --panel-bg: #fffcf0;
+            --border-color: #444;
+            --button-blue: #29adff;
+            --gold: #ffd700;
+            --danger: #ff4444;
+        }
+
+        body {
+            background-color: var(--sky-blue);
+            font-family: 'VT323', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        h1 {
+            font-size: clamp(2.5rem, 8vw, 3.5rem);
+            color: white;
+            text-shadow: 4px 4px 0px #000;
+            margin: 10px 0;
+        }
+
+        .main-container {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            width: 100%;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 6px solid var(--border-color);
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.2);
+            padding: 20px;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        .leaderboard { flex: 2; min-width: 300px; }
+        .side-panel { flex: 1; min-width: 300px; }
+
+        .panel-title {
+            background: var(--border-color);
+            color: white;
+            padding: 5px 15px;
+            position: absolute; 
+            top: -15px; 
+            left: 15px;
+            font-size: 1.3rem; 
+            z-index: 5;
+        }
+
+        .tabs { display: flex; gap: 5px; margin: 15px 0; flex-wrap: wrap; }
+        .tab-btn {
+            background: #ddd;
+            border: 3px solid var(--border-color);
+            padding: 4px 12px;
+            font-family: 'VT323';
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        .tab-btn.active { background: var(--button-blue); color: white; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th { border-bottom: 4px solid var(--border-color); text-align: left; padding: 8px; font-size: 1.1rem; }
+        td { padding: 8px; border-bottom: 1px solid #ddd; }
+        .xp-badge { background: var(--gold); padding: 0px 6px; border: 2px solid #b8860b; font-weight: bold; }
+
+        #view-ciclo table { table-layout: fixed; }
+        #view-ciclo th:nth-child(1), #view-ciclo td:nth-child(1) { width: 30%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        #view-ciclo th:nth-child(2), #view-ciclo td:nth-child(2) { width: 15%; text-align: center; }
+        #view-ciclo th:nth-child(3), #view-ciclo td:nth-child(3) { width: 55%; }
+
+        .log-container { display: flex; flex-wrap: wrap; gap: 4px; }
+        .badge-item { font-size: 0.75rem; padding: 2px 6px; border: 1px solid #444; border-radius: 3px; background: #eee; text-transform: uppercase; }
+        .badge-prova { background: #ffd700; border-color: #b8860b; }
+        .badge-online { background: #add8e6; border-color: #4682b4; }
+        .badge-part { background: #90ee90; border-color: #2e7d32; }
+        .badge-desafio { background: #ee82ee; border-color: #8b008b; }
+
+        /* AJUSTE NA GALERIA DE PLAYERS PARA TAMANHO UNIFORME */
+        .players-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
+            gap: 15px; 
+            margin-top: 10px; 
+        }
+
+        .player-card { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: space-between; /* Distribui imagem e nome uniformemente */
+            text-align: center; 
+            border: 2px solid var(--border-color); 
+            padding: 10px; 
+            background: rgba(255,255,255,0.5); 
+            height: 100px; /* ALTURA FIXA PARA TODOS OS CARDS */
+        }
+
+        .player-card img { 
+            width: 60px; 
+            height: 60px; 
+            image-rendering: pixelated; 
+            background: #eee; 
+            border: 2px solid #444; 
+            margin-bottom: 5px; 
+            display: block; 
+        }
+
+        .player-card span {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 40px; /* Espaço fixo para o nome (cabe 2 linhas) */
+            line-height: 1.1;
+            font-size: 1.1rem;
+            word-wrap: break-word;
+        }
+
+        .rule-item { margin-bottom: 10px; padding: 8px; border-left: 5px solid var(--button-blue); background: rgba(41, 173, 255, 0.1); }
+        .gain { color: #2e7d32; font-weight: bold; }
+        .hidden { display: none !important; }
+
+        /* Estilo do Campeão */
+        .champion-card {
+            background: #fff;
+            border: 3px solid var(--gold);
+            padding: 10px;
+            position: relative;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .champion-card::before {
+            content: "CAMPEÃO DO CICLO";
+            position: absolute;
+            top: -10px;
+            right: 10px;
+            background: var(--gold);
+            color: #000;
+            font-size: 0.7rem;
+            font-weight: bold;
+            padding: 2px 6px;
+            border: 2px solid #000;
+        }
+        .champion-avatar { width: 45px; height: 45px; border: 2px solid var(--gold); image-rendering: pixelated; background: #eee; }
+        .champion-info h2 { margin: 0; font-size: 1.2rem; color: #444; }
+        .champion-info p { margin: 0; font-size: 0.8rem; color: #666; }
+
+        #champ-mobile { display: none; width: 100%; }
+        #champ-desktop { display: block; }
+
+        @media (max-width: 768px) {
+            .main-container { flex-direction: column; }
+            .leaderboard, .side-panel { width: 100%; }
+            #champ-mobile { display: block; }
+            #champ-desktop { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>O DESAFIO OLÍMPICO</h1>
+
+    <div class="main-container">
+        
+        <div id="champ-mobile" class="hidden">
+            <div class="champion-card">
+                <div class="champion-content" style="display: flex; align-items: center; gap: 12px; width: 100%;"></div>
+            </div>
+        </div>
+
+        <div class="panel leaderboard">
+            <span class="panel-title" id="main-panel-title">RANKING DOS PLAYERS</span>
+            
+            <div class="tabs">
+                <button class="tab-btn active" data-mode="geral" onclick="changeMode('geral')">RANKING</button>
+                <button class="tab-btn" data-mode="ciclo" onclick="changeMode('ciclo')">CICLOS</button>
+                <button class="tab-btn" data-mode="players" onclick="changeMode('players')">PLAYERS</button>
+                
+                <select id="cycle-select" class="hidden" onchange="renderCiclo(this.value)" style="font-family:'VT323';">
+                    <option value="2">Ciclo 2</option>
+                    <option value="3">Ciclo 3</option>
+                    <option value="4">Ciclo 4</option>
+                    <option value="5">Ciclo 5</option>
+                    <option value="6">Ciclo 6</option>
+                </select>
+            </div>
+
+            <div id="view-geral">
+                <table>
+                    <thead><tr><th>RANK</th><th>PLAYER</th><th>XP</th><th>🏆</th></tr></thead>
+                    <tbody id="geral-body"></tbody>
+                </table>
+            </div>
+
+            <div id="view-ciclo" class="hidden">
+                <table>
+                    <thead><tr><th>PLAYER</th><th>XP</th><th>DETALHES</th></tr></thead>
+                    <tbody id="ciclo-body"></tbody>
+                </table>
+            </div>
+
+            <div id="view-players" class="hidden">
+                <div class="players-grid" id="players-gallery"></div>
+            </div>
+        </div>
+
+        <div class="panel side-panel">
+            <span class="panel-title">LOG DE REGRAS</span>
+            <div class="rule-item"><span class="gain">AVALIAÇÃO PRESENCIAL</span><br>10 (+5 XP) | 9 a 9.9 (+2 XP)</div>
+            <div class="rule-item"><span class="gain">TAREFA ONLINE</span><br>10 (+3 XP) | 9 a 9.9 (+1 XP)</div>
+            <div class="rule-item"><span class="gain">PARTICIPAÇÃO</span><br>Melhor solução (+3 XP) | Fórum HH (+1 XP)</div>
+            <div class="rule-item"><span class="gain">DESAFIOS (XP variável)</span><br>Desafios surpresa | Em grupo</div>
+            
+            <div class="rule-item" style="border-left-color: var(--danger);">
+                <span style="color:var(--danger); font-weight:bold;">PENALIDADES</span><br>Uso indevido de celular em sala de aula; Plágio ou IA; Atrapalhar a aula
+            </div>
+
+            <div id="champ-desktop" class="hidden">
+                <div class="champion-card">
+                    <div class="champion-content" style="display: flex; align-items: center; gap: 12px; width: 100%;"></div>
+                </div>
+            </div>
+            
+            <div style="font-size: 0.9rem; color: #666; margin-top: 15px;">
+                🏆 O CAMPEÃO DO CICLO: O player com mais XP ao final do ciclo ganha um título. A quantidade de títulos é um dos critérios de desempate.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let dados = [];
+
+        async function carregarDados() {
+            try {
+                const res = await fetch("https://sheetdb.io/api/v1/ambldzgvp4xzn");
+                const json = await res.json();
+                dados = organizarDados(json);
+                renderGeral(); 
+            } catch (erro) { console.error(erro); }
+        }
+
+        function organizarDados(linhas) {
+            let mapa = {};
+            linhas.forEach(l => {
+                if (!mapa[l.nome]) {
+                    mapa[l.nome] = {
+                        nome: l.nome,
+                        avatar: l.avatar,
+                        titulos: parseInt(l.titulos) || 0,
+                        ciclos: {}
+                    };
+                }
+                const cicloId = String(l.ciclo);
+                mapa[l.nome].ciclos[cicloId] = {
+                    xp: parseInt(l.xp) || 0,
+                    log: l.log || ""
+                };
+            });
+            return Object.values(mapa);
+        }
+
+        function changeMode(mode) {
+            document.getElementById('view-geral').classList.toggle('hidden', mode !== 'geral');
+            document.getElementById('view-ciclo').classList.toggle('hidden', mode !== 'ciclo');
+            document.getElementById('view-players').classList.toggle('hidden', mode !== 'players');
+            document.getElementById('cycle-select').classList.toggle('hidden', mode !== 'ciclo');
+            
+            if (mode !== 'ciclo') {
+                document.getElementById('champ-mobile').classList.add('hidden');
+                document.getElementById('champ-desktop').classList.add('hidden');
+            }
+
+            const titles = { geral: "RANKING DOS PLAYERS", ciclo: "PONTOS POR CICLO", players: "PARTY MEMBERS" };
+            document.getElementById('main-panel-title').innerText = titles[mode];
+
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+
+            if(mode === 'geral') renderGeral();
+            if(mode === 'ciclo') renderCiclo(document.getElementById('cycle-select').value);
+            if(mode === 'players') renderPlayers();
+        }
+
+        function renderGeral() {
+            const body = document.getElementById('geral-body');
+            body.innerHTML = '';
+            let lista = dados.map(a => {
+                let total = 0;
+                for (let c in a.ciclos) total += a.ciclos[c].xp;
+                return { ...a, total };
+            }).sort((a, b) => b.total - a.total);
+
+            lista.forEach((a, i) => {
+                body.innerHTML += `<tr><td>#${i+1}</td><td>${a.nome}</td><td><span class="xp-badge">${a.total}</span></td><td>${a.titulos} 🏆</td></tr>`;
+            });
+        }
+
+        function renderCiclo(c) {
+            const body = document.getElementById('ciclo-body');
+            body.innerHTML = '';
+            const cicloAlvo = String(c);
+            let campeao = { nome: "", xp: -1, avatar: "" };
+
+            dados.forEach(a => {
+                const info = a.ciclos[cicloAlvo] || { xp: 0, log: "" };
+                
+                if (info.xp > campeao.xp && info.xp > 0) {
+                    campeao = { nome: a.nome, xp: info.xp, avatar: a.avatar };
+                }
+
+                const itensLog = info.log ? info.log.split(',') : [];
+                let logHTML = '<div class="log-container">';
+                itensLog.forEach(item => {
+                    let clean = item.trim();
+                    if (!clean) return;
+                    let cor = "";
+                    if (clean.includes("Prova")) cor = "badge-prova";
+                    else if (clean.includes("Online")) cor = "badge-online";
+                    else if (clean.includes("Participação")) cor = "badge-part";
+                    else if (clean.includes("Desafio")) cor = "badge-desafio";
+                    logHTML += `<span class="badge-item ${cor}">${clean}</span>`;
+                });
+                logHTML += '</div>';
+
+                body.innerHTML += `<tr><td>${a.nome}</td><td><strong>${info.xp}</strong></td><td>${logHTML}</td></tr>`;
+            });
+
+            const mContainer = document.getElementById('champ-mobile');
+            const dContainer = document.getElementById('champ-desktop');
+            const mContent = mContainer.querySelector('.champion-content');
+            const dContent = dContainer.querySelector('.champion-content');
+
+            if (campeao.xp > 0) {
+                mContainer.classList.remove('hidden');
+                dContainer.classList.remove('hidden');
+                const html = `
+                    <img src="${campeao.avatar}" class="champion-avatar">
+                    <div class="champion-info">
+                        <h2>${campeao.nome}</h2>
+                        <p><span class="xp-badge" style="font-size:0.7rem">${campeao.xp} XP</span></p>
+                    </div>`;
+                mContent.innerHTML = html;
+                dContent.innerHTML = html;
+            } else {
+                mContainer.classList.add('hidden');
+                dContainer.classList.add('hidden');
+            }
+        }
+
+        function renderPlayers() {
+            const gallery = document.getElementById('players-gallery');
+            gallery.innerHTML = '';
+            
+            dados.forEach(a => {
+                const nomeCompleto = a.nome;
+                let nomeParaExibir = "";
+
+                const nomesCompostos = [
+                    "João Gabriel", 
+                    "José Bernardo", 
+                    "Victor Gabriel", 
+                    "Vitor Cortez"
+                ];
+
+                const precisaComposto = nomesCompostos.some(nc => nomeCompleto.startsWith(nc));
+
+                if (precisaComposto) {
+                    const partes = nomeCompleto.split(' ');
+                    nomeParaExibir = partes[0] + ' ' + (partes[1] || '');
+                } else {
+                    nomeParaExibir = nomeCompleto.split(' ')[0];
+                }
+
+                gallery.innerHTML += `
+                    <div class="player-card">
+                        <img src="${a.avatar}">
+                        <span>${nomeParaExibir}</span>
+                    </div>`;
+            });
+        }
+
+        carregarDados();
+    </script>
+</body>
+</html>
