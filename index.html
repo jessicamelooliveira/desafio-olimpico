@@ -294,7 +294,7 @@
                 document.getElementById('champ-desktop').classList.add('hidden');
             }
 
-            const titles = { geral: "RANKING DOS PLAYERS", ciclo: "PONTOS POR CICLO", players: "PARTY MEMBERS" };
+            const titles = { geral: "RANKING DOS PLAYERS", ciclo: "PONTOS POR CICLO", players: "GALERIA DOS PLAYERS" };
             document.getElementById('main-panel-title').innerText = titles[mode];
 
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
