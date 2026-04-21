@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Quest - PIC Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sky-blue: #87CEEB;
+            --grass-green: #7cfc00;
+            --button-blue: #29adff;
+            --panel-bg: #fffcf0; /* Cor de papel antigo/pergaminho */
+            --border-color: #444;
+            --gold: #ffd700;
+            --danger: #ff4444;
+        }
+
+        body {
+            background-color: var(--sky-blue);
+            font-family: 'VT323', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 20px;
+            color: #333;
+            font-size: 1.3rem;
+            margin: 0;
+            overflow: hidden; /* Evita scroll na página principal se a tela for grande o suficiente */
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            color: white;
+            text-shadow: 4px 4px 0px #000;
+            margin: 10px 0;
+        }
+
+        /* Container que mantém os dois painéis lado a lado como no index2 */
+        .main-container {
+            display: flex;
+            gap: 20px;
+            max-width: 1200px;
+            width: 100%;
+            align-items: flex-start;
+        }
+
+        /* Painel Estilo RPG Clássico do index2 */
+        .panel {
+            background: var(--panel-bg);
+            border: 6px solid var(--border-color);
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
+            padding: 20px;
+            position: relative;
+            min-height: 450px;
+        }
+
+        .leaderboard { flex: 2; }
+        .side-panel { flex: 1; }
+
+        .panel-title {
+            background: var(--border-color);
+            color: white;
+            padding: 5px 15px;
+            position: absolute;
+            top: -20px;
+            left: 20px;
+            font-size: 1.5rem;
+        }
+
+        /* Abas integradas dentro do painel de Ranking */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 15px;
+            margin-top: 10px;
+        }
+
+        .tab-btn {
+            background: #ddd;
+            border: 3px solid var(--border-color);
+            padding: 2px 10px;
+            font-family: 'VT323';
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+
+        .tab-btn.active {
+            background: var(--button-blue);
+            color: white;
+        }
+
+        /* Tabelas */
+        table { width: 100%; border-collapse: collapse; }
+        th { border-bottom: 4px solid var(--border-color); text-align: left; padding: 8px; font-size: 1.1rem; }
+        td { padding: 8px; border-bottom: 1px solid #ddd; position: relative; }
+
+        /* Tooltip de detalhes */
+        .player-row:hover .tooltip { display: block; }
+        .tooltip {
+            display: none;
+            position: absolute;
+            background: #333;
+            color: #fff;
+            padding: 5px 10px;
+            border: 2px solid var(--border-color);
+            font-size: 0.9rem;
+            z-index: 100;
+            left: 50px;
+            bottom: 20px;
+            width: 180px;
+        }
+
+        .xp-badge {
+            background: var(--gold);
+            padding: 0px 6px;
+            border: 2px solid #b8860b;
+            font-weight: bold;
+        }
+
+        /* Regras do index2 */
+        .rule-item {
+            margin-bottom: 12px;
+            padding: 8px;
+            border-left: 5px solid var(--button-blue);
+            background: rgba(41, 173, 255, 0.1);
+            font-size: 1.1rem;
+        }
+
+        .gain { color: #2e7d32; font-weight: bold; }
+        .loss { color: var(--danger); font-weight: bold; }
+
+        select {
+            font-family: 'VT323';
+            background: white;
+            border: 2px solid var(--border-color);
+            margin-left: 10px;
+        }
+
+        .hidden { display: none; }
+
+    </style>
+</head>
+<body>
+
+    <h1>OBMEP QUEST</h1>
+
+    <div class="main-container">
+        
+        <div class="panel leaderboard">
+            <span class="panel-title" id="main-panel-title">RANKING DOS PLAYERS</span>
+            
+            <div class="tabs">
+                <button class="tab-btn active" onclick="changeMode('geral')">GERAL</button>
+                <button class="tab-btn" onclick="changeMode('ciclo')">POR CICLO</button>
+                <select id="cycle-select" class="hidden" onchange="renderCiclo(this.value)">
+                    <option value="1">Ciclo 1</option>
+                    <option value="2">Ciclo 2</option>
+                </select>
+            </div>
+
+            <div id="view-geral">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>RANK</th>
+                            <th>PLAYER</th>
+                            <th>XP TOTAL</th>
+                            <th>TROFÉUS</th>
+                        </tr>
+                    </thead>
+                    <tbody id="geral-body"></tbody>
+                </table>
+            </div>
+
+            <div id="view-ciclo" class="hidden">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>PLAYER</th>
+                            <th>XP NO CICLO</th>
+                            <th>DETALHES</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ciclo-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel side-panel">
+            <span class="panel-title">LOG DE REGRAS</span>
+            
+            <div class="rule-item">
+                <span class="gain">AVALIAÇÃO PRESENCIAL</span><br>
+                Nota 10 (+5 XP) | 9-9.9 (+2 XP)
+            </div>
+            
+            <div class="rule-item">
+                <span class="gain">TAREFA ONLINE</span><br>
+                Nota 10 (+3 XP) | 9-9.9 (+1 XP)
+            </div>
+
+            <div class="rule-item">
+                <span class="gain">PARTICIPAÇÃO</span><br>
+                Solução (+3 XP) | Fórum (+1 XP)
+            </div>
+
+            <div class="rule-item" style="border-left-color: var(--danger);">
+                <span class="loss">PENALIDADES</span><br>
+                Celular, Plágio/IA, Bagunça
+            </div>
+
+            <div style="font-size: 0.9rem; color: #666; margin-top: 15px;">
+                * Passe o mouse no nome (aba Ciclo) para ver os detalhes da pontuação.
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const alunosNomes = ["Daniel", "João Gabriel", "José Bernardo", "Kaio", "Leonardo", "Lucca", "Luiz", "Marina", "Maurício", "Niccolas", "Renan", "Sofia", "Theo", "Victor Gabriel", "Vitor Cortez"];
+
+        let dados = alunosNomes.map(nome => ({
+            nome: nome,
+            titulos: 0,
+            ciclos: {
+                1: { xp: 10, log: "Prova: +5, Online: +3, Fórum: +2" },
+                2: { xp: 5, log: "Melhor Solução: +3, Fórum: +2" }
+            }
+        }));
+
+        function changeMode(mode) {
+            const isGeral = mode === 'geral';
+            document.getElementById('view-geral').classList.toggle('hidden', !isGeral);
+            document.getElementById('view-ciclo').classList.toggle('hidden', isGeral);
+            document.getElementById('cycle-select').classList.toggle('hidden', isGeral);
+            document.getElementById('main-panel-title').innerText = isGeral ? "RANKING DOS PLAYERS" : "MISSÕES DO CICLO";
+            
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.toggle('active', (b.innerText === 'GERAL' && isGeral) || (b.innerText === 'POR CICLO' && !isGeral));
+            });
+
+            if(isGeral) renderGeral(); else renderCiclo(document.getElementById('cycle-select').value);
+        }
+
+        function renderGeral() {
+            const body = document.getElementById('geral-body');
+            body.innerHTML = '';
+            let sorted = dados.map(a => ({...a, total: a.ciclos[1].xp + a.ciclos[2].xp}))
+                             .sort((a,b) => b.total - a.total);
+            
+            sorted.forEach((a, i) => {
+                body.innerHTML += `<tr><td>#${i+1}</td><td>${a.nome}</td><td><span class="xp-badge">${a.total} XP</span></td><td>${a.titulos} 🏆</td></tr>`;
+            });
+        }
+
+        function renderCiclo(c) {
+            const body = document.getElementById('ciclo-body');
+            body.innerHTML = '';
+            dados.forEach(a => {
+                body.innerHTML += `
+                    <tr class="player-row">
+                        <td>${a.nome} <div class="tooltip">${a.ciclos[c].log}</div></td>
+                        <td><strong>${a.ciclos[c].xp} XP</strong></td>
+                        <td style="font-size: 0.8rem; color: #888;">(Hover p/ log)</td>
+                    </tr>`;
+            });
+        }
+
+        renderGeral();
+    </script>
+</body>
+</html>
