@@ -154,7 +154,7 @@
             margin-bottom: 20px;
         }
         .champion-card::before {
-            content: "CAMPEÃO DO CICLO";
+            content: attr(data-title);
             position: absolute;
             top: -10px;
             right: 10px;
@@ -322,48 +322,95 @@
             const body = document.getElementById('ciclo-body');
             body.innerHTML = '';
             const cicloAlvo = String(c);
-            let campeao = { nome: "", xp: -1, avatar: "" };
-
+        
+            let campeoes = [];
+            let maiorXp = -1;
+        
             dados.forEach(a => {
                 const info = a.ciclos[cicloAlvo] || { xp: 0, log: "" };
-                
-                if (info.xp > campeao.xp && info.xp > 0) {
-                    campeao = { nome: a.nome, xp: info.xp, avatar: a.avatar };
+        
+                // VERIFICA CAMPEÕES
+                if (info.xp > maiorXp && info.xp > 0) {
+                    maiorXp = info.xp;
+                    campeoes = [{
+                        nome: a.nome,
+                        xp: info.xp,
+                        avatar: a.avatar
+                    }];
+                } 
+                else if (info.xp === maiorXp && info.xp > 0) {
+                    campeoes.push({
+                        nome: a.nome,
+                        xp: info.xp,
+                        avatar: a.avatar
+                    });
                 }
-
+        
                 const itensLog = info.log ? info.log.split(',') : [];
                 let logHTML = '<div class="log-container">';
+        
                 itensLog.forEach(item => {
                     let clean = item.trim();
                     if (!clean) return;
+        
                     let cor = "";
+        
                     if (clean.includes("Prova")) cor = "badge-prova";
                     else if (clean.includes("Online")) cor = "badge-online";
                     else if (clean.includes("Participação")) cor = "badge-part";
                     else if (clean.includes("Desafio")) cor = "badge-desafio";
+        
                     logHTML += `<span class="badge-item ${cor}">${clean}</span>`;
                 });
+        
                 logHTML += '</div>';
-
-                body.innerHTML += `<tr><td>${a.nome}</td><td><strong>${info.xp}</strong></td><td>${logHTML}</td></tr>`;
+        
+                body.innerHTML += `
+                    <tr>
+                        <td>${a.nome}</td>
+                        <td><strong>${info.xp}</strong></td>
+                        <td>${logHTML}</td>
+                    </tr>`;
             });
-
+        
             const mContainer = document.getElementById('champ-mobile');
             const dContainer = document.getElementById('champ-desktop');
+        
             const mContent = mContainer.querySelector('.champion-content');
             const dContent = dContainer.querySelector('.champion-content');
-
-            if (campeao.xp > 0) {
+        
+            // ALTERA TEXTO DO TÍTULO
+            const championLabel = campeoes.length > 1
+                ? "CAMPEÕES DO CICLO"
+                : "CAMPEÃO DO CICLO";
+        
+            document.querySelectorAll('.champion-card').forEach(card => {
+                card.setAttribute('data-title', championLabel);
+            });
+        
+            if (campeoes.length > 0) {
+        
                 mContainer.classList.remove('hidden');
                 dContainer.classList.remove('hidden');
-                const html = `
-                    <img src="${campeao.avatar}" class="champion-avatar">
-                    <div class="champion-info">
-                        <h2>${campeao.nome}</h2>
-                        <p><span class="xp-badge" style="font-size:0.7rem">${campeao.xp} XP</span></p>
-                    </div>`;
+        
+                const html = campeoes.map(c => `
+                    <div style="display:flex; align-items:center; gap:12px; margin-right:20px;">
+                        <img src="${c.avatar}" class="champion-avatar">
+        
+                        <div class="champion-info">
+                            <h2>${c.nome}</h2>
+                            <p>
+                                <span class="xp-badge" style="font-size:0.7rem">
+                                    ${c.xp} XP
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                `).join('');
+        
                 mContent.innerHTML = html;
                 dContent.innerHTML = html;
+        
             } else {
                 mContainer.classList.add('hidden');
                 dContainer.classList.add('hidden');
