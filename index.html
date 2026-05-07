@@ -169,6 +169,44 @@
         .champion-info h2 { margin: 0; font-size: 1.2rem; color: #444; }
         .champion-info p { margin: 0; font-size: 0.8rem; color: #666; }
 
+        .champions-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .mini-champion {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 90px;
+            padding: 8px;
+            background: #fff8dc;
+            border: 2px solid var(--gold);
+            text-align: center;
+        }
+        
+        .mini-champion img {
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--gold);
+            image-rendering: pixelated;
+            margin-bottom: 5px;
+        }
+        
+        .mini-champion .name {
+            font-size: 0.9rem;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        
+        .mini-champion .xp-badge {
+            font-size: 0.7rem;
+        }
+
         #champ-mobile { display: none; width: 100%; }
         #champ-desktop { display: block; }
 
@@ -393,20 +431,44 @@
                 mContainer.classList.remove('hidden');
                 dContainer.classList.remove('hidden');
         
-                const html = campeoes.map(c => `
-                    <div style="display:flex; align-items:center; gap:12px; margin-right:20px;">
+                let html = "";
+
+                if (campeoes.length === 1) {
+                
+                    const c = campeoes[0];
+                
+                    html = `
                         <img src="${c.avatar}" class="champion-avatar">
-        
+                
                         <div class="champion-info">
                             <h2>${c.nome}</h2>
+                
                             <p>
                                 <span class="xp-badge" style="font-size:0.7rem">
                                     ${c.xp} XP
                                 </span>
                             </p>
                         </div>
-                    </div>
-                `).join('');
+                    `;
+                
+                } else {
+                
+                    html = `
+                        <div class="champions-grid">
+                            ${campeoes.map(c => `
+                                <div class="mini-champion">
+                                    <img src="${c.avatar}">
+                
+                                    <div class="name">${c.nome}</div>
+                
+                                    <span class="xp-badge">
+                                        ${c.xp} XP
+                                    </span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                }
         
                 mContent.innerHTML = html;
                 dContent.innerHTML = html;
