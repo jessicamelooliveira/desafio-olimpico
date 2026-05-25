@@ -84,7 +84,7 @@
         td { padding: 8px; border-bottom: 1px solid #ddd; }
         .xp-badge { background: var(--gold); padding: 0px 6px; border: 2px solid #b8860b; font-weight: bold; }
         
-        /* --- ESTILOS NOVOS PARA OS PONTOS CONGELADOS --- */
+        /* --- ESTILOS DOS PONTOS E CARDS CONGELADOS --- */
         .xp-badge.congelado { 
             background: #b3e5fc; 
             border-color: #0288d1; 
@@ -93,6 +93,16 @@
         .text-congelado { 
             color: #0288d1; 
             font-weight: bold; 
+        }
+        
+        /* Novo estilo para o card do player na aba PLAYERS */
+        .player-card.congelado {
+            background: rgba(179, 229, 252, 0.6); 
+            border-color: #0288d1;
+            color: #01579b;
+        }
+        .player-card.congelado img {
+            border-color: #0288d1;
         }
         /* ----------------------------------------------- */
 
@@ -362,12 +372,10 @@
             }).sort((a, b) => b.total - a.total);
 
             lista.forEach((a, i) => {
-                // --- NOVA LÓGICA DE VERIFICAÇÃO DE AVATAR ---
                 let isCongelado = !a.avatar || a.avatar.trim() === "";
                 let badgeHTML = isCongelado
                     ? `<span class="xp-badge congelado" title="Pontos Congelados! Envie seu avatar.">${a.total} ❄️</span>`
                     : `<span class="xp-badge">${a.total}</span>`;
-                // --------------------------------------------
 
                 body.innerHTML += `<tr><td>#${i+1}</td><td>${a.nome}</td><td>${badgeHTML}</td><td>${a.titulos} 🏆</td></tr>`;
             });
@@ -383,23 +391,27 @@
         
             dados.forEach(a => {
                 const info = a.ciclos[cicloAlvo] || { xp: 0, log: "" };
+                let isCongelado = !a.avatar || a.avatar.trim() === "";
         
-                // VERIFICA CAMPEÕES
-                if (info.xp > maiorXp && info.xp > 0) {
-                    maiorXp = info.xp;
-                    campeoes = [{
-                        nome: a.nome,
-                        xp: info.xp,
-                        avatar: a.avatar
-                    }];
-                } 
-                else if (info.xp === maiorXp && info.xp > 0) {
-                    campeoes.push({
-                        nome: a.nome,
-                        xp: info.xp,
-                        avatar: a.avatar
-                    });
+                // --- NOVA REGRA: Só pode ser campeão quem NÃO está congelado ---
+                if (!isCongelado) {
+                    if (info.xp > maiorXp && info.xp > 0) {
+                        maiorXp = info.xp;
+                        campeoes = [{
+                            nome: a.nome,
+                            xp: info.xp,
+                            avatar: a.avatar
+                        }];
+                    } 
+                    else if (info.xp === maiorXp && info.xp > 0) {
+                        campeoes.push({
+                            nome: a.nome,
+                            xp: info.xp,
+                            avatar: a.avatar
+                        });
+                    }
                 }
+                // ---------------------------------------------------------------
         
                 const itensLog = info.log ? info.log.split(',') : [];
                 let logHTML = '<div class="log-container">';
@@ -420,12 +432,9 @@
         
                 logHTML += '</div>';
 
-                // --- NOVA LÓGICA DE VERIFICAÇÃO DE AVATAR AQUI TBM ---
-                let isCongelado = !a.avatar || a.avatar.trim() === "";
                 let xpHTML = isCongelado
                     ? `<span class="text-congelado" title="Pontos Congelados! Envie seu avatar.">${info.xp} ❄️</span>`
                     : `<strong>${info.xp}</strong>`;
-                // -----------------------------------------------------
         
                 body.innerHTML += `
                     <tr>
@@ -441,7 +450,6 @@
             const mContent = mContainer.querySelector('.champion-content');
             const dContent = dContainer.querySelector('.champion-content');
         
-            // ALTERA TEXTO DO TÍTULO
             const championLabel = campeoes.length > 1
                 ? "CAMPEÕES DO CICLO"
                 : "CAMPEÃO DO CICLO";
@@ -526,10 +534,16 @@
                     nomeParaExibir = nomeCompleto.split(' ')[0];
                 }
 
+                // --- ESTILIZA O CARD SE ESTIVER CONGELADO ---
+                let isCongelado = !a.avatar || a.avatar.trim() === "";
+                let classCard = isCongelado ? "player-card congelado" : "player-card";
+                let emojiCongelado = isCongelado ? " <br>❄️" : "";
+                // --------------------------------------------
+
                 gallery.innerHTML += `
-                    <div class="player-card">
+                    <div class="${classCard}">
                         <img src="${a.avatar}">
-                        <span>${nomeParaExibir}</span>
+                        <span>${nomeParaExibir}${emojiCongelado}</span>
                     </div>`;
             });
         }
