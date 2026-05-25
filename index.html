@@ -83,6 +83,18 @@
         th { border-bottom: 4px solid var(--border-color); text-align: left; padding: 8px; font-size: 1.1rem; }
         td { padding: 8px; border-bottom: 1px solid #ddd; }
         .xp-badge { background: var(--gold); padding: 0px 6px; border: 2px solid #b8860b; font-weight: bold; }
+        
+        /* --- ESTILOS NOVOS PARA OS PONTOS CONGELADOS --- */
+        .xp-badge.congelado { 
+            background: #b3e5fc; 
+            border-color: #0288d1; 
+            color: #01579b; 
+        }
+        .text-congelado { 
+            color: #0288d1; 
+            font-weight: bold; 
+        }
+        /* ----------------------------------------------- */
 
         #view-ciclo table { table-layout: fixed; }
         #view-ciclo th:nth-child(1), #view-ciclo td:nth-child(1) { width: 30%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -96,7 +108,6 @@
         .badge-part { background: #90ee90; border-color: #2e7d32; }
         .badge-desafio { background: #ee82ee; border-color: #8b008b; }
 
-        /* AJUSTE NA GALERIA DE PLAYERS PARA TAMANHO UNIFORME */
         .players-grid { 
             display: grid; 
             grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); 
@@ -108,12 +119,12 @@
             display: flex; 
             flex-direction: column; 
             align-items: center; 
-            justify-content: space-between; /* Distribui imagem e nome uniformemente */
+            justify-content: space-between; 
             text-align: center; 
             border: 2px solid var(--border-color); 
             padding: 10px; 
             background: rgba(255,255,255,0.5); 
-            height: 100px; /* ALTURA FIXA PARA TODOS OS CARDS */
+            height: 100px; 
         }
 
         .player-card img { 
@@ -131,7 +142,7 @@
             align-items: center;
             justify-content: center;
             width: 100%;
-            height: 40px; /* Espaço fixo para o nome (cabe 2 linhas) */
+            height: 40px; 
             line-height: 1.1;
             font-size: 1.1rem;
             word-wrap: break-word;
@@ -141,7 +152,6 @@
         .gain { color: #2e7d32; font-weight: bold; }
         .hidden { display: none !important; }
 
-        /* Estilo do Campeão */
         .champion-card {
             background: #fff;
             border: 3px solid var(--gold);
@@ -352,7 +362,14 @@
             }).sort((a, b) => b.total - a.total);
 
             lista.forEach((a, i) => {
-                body.innerHTML += `<tr><td>#${i+1}</td><td>${a.nome}</td><td><span class="xp-badge">${a.total}</span></td><td>${a.titulos} 🏆</td></tr>`;
+                // --- NOVA LÓGICA DE VERIFICAÇÃO DE AVATAR ---
+                let isCongelado = !a.avatar || a.avatar.trim() === "";
+                let badgeHTML = isCongelado
+                    ? `<span class="xp-badge congelado" title="Pontos Congelados! Envie seu avatar.">${a.total} ❄️</span>`
+                    : `<span class="xp-badge">${a.total}</span>`;
+                // --------------------------------------------
+
+                body.innerHTML += `<tr><td>#${i+1}</td><td>${a.nome}</td><td>${badgeHTML}</td><td>${a.titulos} 🏆</td></tr>`;
             });
         }
 
@@ -402,11 +419,18 @@
                 });
         
                 logHTML += '</div>';
+
+                // --- NOVA LÓGICA DE VERIFICAÇÃO DE AVATAR AQUI TBM ---
+                let isCongelado = !a.avatar || a.avatar.trim() === "";
+                let xpHTML = isCongelado
+                    ? `<span class="text-congelado" title="Pontos Congelados! Envie seu avatar.">${info.xp} ❄️</span>`
+                    : `<strong>${info.xp}</strong>`;
+                // -----------------------------------------------------
         
                 body.innerHTML += `
                     <tr>
                         <td>${a.nome}</td>
-                        <td><strong>${info.xp}</strong></td>
+                        <td>${xpHTML}</td>
                         <td>${logHTML}</td>
                     </tr>`;
             });
@@ -434,15 +458,15 @@
                 let html = "";
 
                 if (campeoes.length === 1) {
-                
+        
                     const c = campeoes[0];
-                
+        
                     html = `
                         <img src="${c.avatar}" class="champion-avatar">
-                
+        
                         <div class="champion-info">
                             <h2>${c.nome}</h2>
-                
+        
                             <p>
                                 <span class="xp-badge" style="font-size:0.7rem">
                                     ${c.xp} XP
@@ -450,17 +474,17 @@
                             </p>
                         </div>
                     `;
-                
+        
                 } else {
-                
+        
                     html = `
                         <div class="champions-grid">
                             ${campeoes.map(c => `
                                 <div class="mini-champion">
                                     <img src="${c.avatar}">
-                
+        
                                     <div class="name">${c.nome}</div>
-                
+        
                                     <span class="xp-badge">
                                         ${c.xp} XP
                                     </span>
@@ -490,8 +514,7 @@
                 const nomesCompostos = [
                     "João Gabriel", 
                     "José Bernardo", 
-                    "Victor Gabriel", 
-                    "Vitor Cortez"
+                    "Victor Gabriel"
                 ];
 
                 const precisaComposto = nomesCompostos.some(nc => nomeCompleto.startsWith(nc));
